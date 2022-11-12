@@ -1,17 +1,17 @@
 from collections import Counter    # counter to sort arrays by number of occurances
 import os.path    # check for bad_phrases.txt and cliches.txt
 
-essay = """In the novel, the Younger family experiences intense discrimination. The cruelty imposed by society has negative effects on the family, who despite this, all still have dreams about a better life with lesser suffering. In my opintion, Raisin in the Sun is terrible. I don't like it."""
-#           ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^    ^
-#position:  0    5    10   15   20   25   30   35   40   45   50   55   60   65   70   75   80
-
 class Essay:
-
+    
+    # constructor
+    def __init__(self, essay):
+        self.essay = format_essay(essay)
+    
     
     # find the number of words
     def num_of_words(self): # include dash?, fix for quotes
         num_of_words = 1
-        for c in essay:
+        for c in self.essay:
             if c == " ":
                 num_of_words += 1
         print("Words:", num_of_words)
@@ -21,43 +21,47 @@ class Essay:
     def num_of_sentences(self):
         not_end_of_sentence = ["Mr", "Mrs", "Inc"] # words with trailing periods which do not denote the end of a sentece   # NEEDS WORK - add more words, fix for quotes
         num_of_sentences = 0
-        for c in essay:
+        for c in self.essay:
             if c == "." or c == "!" or c == "?":
-                num_of_sentences += 1            
+                num_of_sentences += 1
         print("Sentences:", num_of_sentences)
               
 
     # find the number of characters
     def num_of_chars(self):
-        num_of_chars = 0
-        for c in essay:
-            num_of_chars += 1
-        print("Characters:", num_of_chars)
+        char_count = 0
+        space_count = 0
+        for c in self.essay:
+            char_count += 1
+            if c == ' ':
+                space_count += 1
+
+        print("Characters:", char_count, '\nCharacters (excluding spaces)', char_count-space_count)
         
         
     # find the number of times each word starts a sentence
     def start_of_sentence(self):
         # declare and initialize variables
         first_words = []
-        first_words.append(essay[0: essay.find(" ")]) # add first word in string (position 0 to first space)
+        first_words.append(self.essay[0: self.essay.find(" ")]) # add first word in string (position 0 to first space)
         position = 0 # position counter for string loop
         not_end_of_sentence = ["Mr", "Mrs", "Inc"] # words with trailing periods which do not denote the end of a sentece   # NEEDS WORK - add more words, fix for quotes
 
-        for c in essay:
+        # loop through string, 
+        for c in self.essay:
             if c == ".":
-                if position == len(essay) - 1: # don't count the last period
+                if position == len(self.essay) - 1: # don't count the last period
                     break
-                elif essay[position - 3: position] in not_end_of_sentence: # don't count Mr, Mrs, etc. as end of sentence    # NEEDS WORK
+                elif self.essay[self.essay.rfind(' ', 0, position)+1: position] in not_end_of_sentence: # don't count abbreviations as end of sentence    # NEEDS WORK
                     pass
                 else: # find the first space (or comma) after the space directly after the period
                     start = position + 2
-                    end = essay.find(" ", position + 2)
-                    if essay.find(",", position + 2) < end and essay.find(",", position + 2) > 0: # if a comma comes before the first space, use the comma as the end of the word    # Efficieny?
-                            end = essay.find(",", position + 2)
-                    first_words.append(essay[start:end])
+                    end = self.essay.find(" ", position + 2)
+                    if self.essay.find(",", position + 2) < end and self.essay.find(",", position + 2) > 0: # if a comma comes before the first space, use the comma as the end of the word    # Efficieny?
+                            end = self.essay.find(",", position + 2)
+                    first_words.append(self.essay[start:end])
                 
-            # position in string counter
-            position += 1
+            position += 1  # position in string counter
             
         # sort the items in the first_words list by the number of occurances
         sorted_first_words = [item for items, c in Counter(first_words).most_common() for item in [items] * c]
@@ -81,17 +85,17 @@ class Essay:
     def word_occurances(self):
         # declare and initialize varaibles
         words = []
-        words.append(essay[0: essay.find(" ")].lower())
+        words.append(self.essay[0: self.essay.find(" ")].lower())
         position = 0
         
-        for c in essay:
+        for c in self.essay:
             if c == " ":
-                if position == len(essay) - 1: # don't count the last period
+                if position == len(self.essay) - 1: # don't count the last period
                     break
                 else: # find the first space after the space directly after the period
                     start = position + 1
-                    end = essay.find(" ", position + 2)
-                    words.append(essay[start:end].lower())
+                    end = self.essay.find(" ", position + 2)
+                    words.append(self.essay[start:end].lower())
                 
             # position in string counter
             position += 1
@@ -122,7 +126,7 @@ class Essay:
             bad_phrases_used = []
 
             for i in bad_phrases:
-                if i in essay.lower(): bad_phrases_used.append(i)
+                if i in self.essay.lower(): bad_phrases_used.append(i)
 
             if bad_phrases_used == []:
                 print("There are no terms/phrases that are recommended to be removed")
@@ -139,7 +143,7 @@ class Essay:
             cliches_used = []
 
             for i in cliches:
-                if i in essay.lower(): cliches_used.append(i)
+                if i in self.essay.lower(): cliches_used.append(i)
 
             if cliches_used == []:
                 print("There are no cliches that are recommended to be removed")
@@ -151,7 +155,7 @@ class Essay:
         
 
 # format string for ease of use
-def format_essay():
+def format_essay(essay):
     # remove white spaces from beginning and end
     e = essay.strip()
     
@@ -162,11 +166,9 @@ def format_essay():
     return e
 
 
-def check_essay():
+def check_essay(essay):
     
-    essay = format_essay()
-    
-    e1 = Essay()
+    e1 = Essay(essay)
     print('')
     e1.num_of_words()
     print('')
@@ -182,11 +184,7 @@ def check_essay():
     print('')
 
 
-def check_essay_test():
+with open('essay.txt', 'r') as f:
+    essay = f.read()
 
-    essay_to_check = essay
-
-    essay = Essay()
-    
-    
-check_essay()
+check_essay(essay)
