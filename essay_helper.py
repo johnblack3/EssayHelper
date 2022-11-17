@@ -6,6 +6,8 @@ Created by John Black
 
 from collections import Counter
 import os.path
+import cmudict
+import re
 
 class Essay:
     """
@@ -14,6 +16,14 @@ class Essay:
     def __init__(self, essay, num_of_spaces_after_period=1):
         self.essay = self.format_essay(essay)
         self.num_of_spaces_after_period = num_of_spaces_after_period
+        self.word_count = self.num_of_words()
+        self.sentence_count = self.num_of_sentences()
+        self.syllable_count = self.num_of_syllables()
+
+    def __str__(self):
+        return self.essay
+
+    __repr__ = __str__
 
     def format_essay(self, essay):
         """Format string for ease of use."""
@@ -29,6 +39,7 @@ class Essay:
             if c == " ":
                 num_of_words += 1
         print("Words:", num_of_words)
+        return num_of_words
     
     def num_of_sentences(self):
         """Find the number of sentences. Not finished."""
@@ -43,6 +54,7 @@ class Essay:
                     num_of_sentences += 1
             position += 1
         print("Sentences:", num_of_sentences)
+        return num_of_sentences
 
     def num_of_chars(self):
         """Find the number of characters."""
@@ -157,6 +169,38 @@ class Essay:
         else:
             print("There is no list of cliches to be checked for.")
 
+    def get_flesh_kincaid_score(self):
+        reading_ease_score = 206.835 - 1.015 * (self.word_count/self.sentence_count) - 84.6 * (self.syllable_count/self.word_count)
+        return reading_ease_score
+
+    def get_syllables(self, word):
+        word = word.lower()
+        count = 0
+        vowels = "aeiouy"
+        if word[0] in vowels:
+            count += 1
+        for index in range(1, len(word)):
+            if word[index] in vowels and word[index - 1] not in vowels:
+                count += 1
+        if word.endswith("e"):
+            count -= 1
+        if count == 0:
+            count += 1
+
+        if count != self.sylco(word):
+            print(word, count, self.sylco(word))
+        return count
+
+    def num_of_syllables(self):
+        total_syllables = 0
+        no_punct = ""
+        for c in self.essay:
+            if c not in '''!"#$%&'()*+, -./:;<=>?@[\]^_`{|}~''' or c == ' ':
+                no_punct += c
+        for word in no_punct.split():
+            total_syllables += self.get_syllables(word)
+        return total_syllables
+
 
 def check_essay(essay):
     
@@ -174,8 +218,12 @@ def check_essay(essay):
     print('')
     e1.bad_phrases()
     print('')
+    e1.get_flesh_kincaid_score()
 
 with open('essay.txt', 'r') as f:
     essay = f.read()
 
-check_essay(essay)
+#check_essay(essay)
+e1 = Essay(essay)
+print('here')
+print(e1.get_flesh_kincaid_score())
