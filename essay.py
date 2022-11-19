@@ -6,8 +6,7 @@ Created by John Black
 
 from collections import Counter
 import os.path
-import cmudict
-import re
+from essay_statistics import EssayStatistics
 
 class Essay:
     """
@@ -15,10 +14,8 @@ class Essay:
     """
     def __init__(self, essay, num_of_spaces_after_period=1):
         self.essay = self.format_essay(essay)
+        self.statistics = EssayStatistics(self.essay)
         self.num_of_spaces_after_period = num_of_spaces_after_period
-        self.word_count = self.num_of_words()
-        self.sentence_count = self.num_of_sentences()
-        self.syllable_count = self.num_of_syllables()
 
     def __str__(self):
         return self.essay
@@ -31,40 +28,6 @@ class Essay:
         e = e.replace("  ", " ")
         e = e.replace("\n", " ")
         return e
-    
-    def num_of_words(self):
-        """Find the number of words."""
-        num_of_words = 1
-        for c in self.essay:
-            if c == " ":
-                num_of_words += 1
-        print("Words:", num_of_words)
-        return num_of_words
-    
-    def num_of_sentences(self):
-        """Find the number of sentences. Not finished."""
-        not_end_of_sentence = ["Mr", "Mrs", "Inc"] # words with trailing periods which do not denote the end of a sentece   # NEEDS WORK - add more words, fix for quotes
-        num_of_sentences = 0
-        position = 0
-        for c in self.essay:
-            if c in [".", "?", "!"]:
-                if position == len(self.essay) - 1:
-                    break
-                elif self.essay[position + 1] == " ":
-                    num_of_sentences += 1
-            position += 1
-        print("Sentences:", num_of_sentences)
-        return num_of_sentences
-
-    def num_of_chars(self):
-        """Find the number of characters."""
-        char_count = 0
-        space_count = 0
-        for c in self.essay:
-            char_count += 1
-            if c == ' ':
-                space_count += 1
-        print("Characters:", char_count, '\nCharacters (excluding spaces):', char_count-space_count)
         
     def start_of_sentence(self):
         """Find the number of times each word starts a sentence."""
@@ -137,8 +100,8 @@ class Essay:
     
     def bad_phrases(self):
         """Find terms, phrases, and cliches that should be removed."""
-        if os.path.exists('bad_phrases.txt'):
-            with open('bad_phrases.txt') as f:
+        if os.path.exists('texts/bad_phrases.txt'):
+            with open('texts/bad_phrases.txt') as f:
                 bad_phrases = [line.lower().rstrip('\n') for line in f]
             bad_phrases_used = []
 
@@ -153,8 +116,8 @@ class Essay:
         else:
             print("There is no list of terms/phrases to be checked for.")
 
-        if os.path.exists('cliches.txt'):
-            with open('cliches.txt') as f:
+        if os.path.exists('texts/cliches.txt'):
+            with open('texts/cliches.txt') as f:
                 cliches = [line.lower().rstrip('\n') for line in f]
             cliches_used = []
 
@@ -170,60 +133,36 @@ class Essay:
             print("There is no list of cliches to be checked for.")
 
     def get_flesh_kincaid_score(self):
-        reading_ease_score = 206.835 - 1.015 * (self.word_count/self.sentence_count) - 84.6 * (self.syllable_count/self.word_count)
+        stats = self.statistics
+        print(stats.word_count, stats.sentence_count, stats.syllable_count)
+        print(stats.avg_words_per_sentence, stats.word_count/stats.sentence_count)
+        print(stats.avg_syllables_per_sentence, stats.syllable_count/stats.sentence_count)
+        reading_ease_score = 206.835 - 1.015 * (stats.word_count/stats.sentence_count) - 84.6 * (stats.syllable_count/stats.sentence_count)
         return reading_ease_score
-
-    def get_syllables(self, word):
-        word = word.lower()
-        count = 0
-        vowels = "aeiouy"
-        if word[0] in vowels:
-            count += 1
-        for index in range(1, len(word)):
-            if word[index] in vowels and word[index - 1] not in vowels:
-                count += 1
-        if word.endswith("e"):
-            count -= 1
-        if count == 0:
-            count += 1
-
-        if count != self.sylco(word):
-            print(word, count, self.sylco(word))
-        return count
-
-    def num_of_syllables(self):
-        total_syllables = 0
-        no_punct = ""
-        for c in self.essay:
-            if c not in '''!"#$%&'()*+, -./:;<=>?@[\]^_`{|}~''' or c == ' ':
-                no_punct += c
-        for word in no_punct.split():
-            total_syllables += self.get_syllables(word)
-        return total_syllables
 
 
 def check_essay(essay):
     
     e1 = Essay(essay)
     print('')
-    e1.num_of_words()
+    print("Word Count:", e1.statistics.word_count)
     print('')
-    e1.num_of_sentences()
+    print("Sentence Count:", e1.statistics.sentence_count)
     print('')
-    e1.num_of_chars()
+    print("Character Count:", e1.statistics.char_count)
+    print('')
+    print("Character Count Without Spaces:", e1.statistics.char_count_without_spaces)
+    print('')
+    print("Syllable Count:", e1.statistics.syllable_count)
     print('')
     e1.start_of_sentence()
     print('')
     e1.word_occurances()
     print('')
     e1.bad_phrases()
-    print('')
-    e1.get_flesh_kincaid_score()
 
-with open('essay.txt', 'r') as f:
+with open('texts/essay.txt', 'r') as f:
     essay = f.read()
 
-#check_essay(essay)
+check_essay(essay)
 e1 = Essay(essay)
-print('here')
-print(e1.get_flesh_kincaid_score())
