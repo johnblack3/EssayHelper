@@ -9,7 +9,7 @@ import os.path
 from essay_statistics import EssayStatistics
 from essay_readability import EssayReadability
 
-class Essay:
+class EssayHelper:
     """
     This class creates Essay objects and holds methods to analyze the Essay Objects
     """
@@ -175,5 +175,5 @@ class Essay:
 with open('texts/essay.txt', 'r') as f:
     essay = f.read()
 
-e1 = Essay(essay)
+e1 = EssayHelper(essay)
 e1.get_info()
