@@ -7,6 +7,7 @@ Created by John Black
 from collections import Counter
 import os.path
 from essay_statistics import EssayStatistics
+from essay_readability import EssayReadability
 
 class Essay:
     """
@@ -97,6 +98,8 @@ class Essay:
         for item in res:
             words_and_occurs[item] = occur[item]
             print('"{}" is used {} times'.format(item, occur[item]))
+        for key in words_and_occurs:
+            print(key)
     
     def bad_phrases(self):
         """Find terms, phrases, and cliches that should be removed."""
@@ -132,37 +135,45 @@ class Essay:
         else:
             print("There is no list of cliches to be checked for.")
 
-    def get_flesh_kincaid_score(self):
-        stats = self.statistics
-        print(stats.word_count, stats.sentence_count, stats.syllable_count)
-        print(stats.avg_words_per_sentence, stats.word_count/stats.sentence_count)
-        print(stats.avg_syllables_per_sentence, stats.syllable_count/stats.sentence_count)
-        reading_ease_score = 206.835 - 1.015 * (stats.word_count/stats.sentence_count) - 84.6 * (stats.syllable_count/stats.sentence_count)
-        return reading_ease_score
+    def flesch(self):
+        return EssayReadability(self.essay).flesch()
 
+    def flesch_kincaid(self):
+        return EssayReadability(self.essay).flesch_kincaid()
 
-def check_essay(essay):
-    
-    e1 = Essay(essay)
-    print('')
-    print("Word Count:", e1.statistics.word_count)
-    print('')
-    print("Sentence Count:", e1.statistics.sentence_count)
-    print('')
-    print("Character Count:", e1.statistics.char_count)
-    print('')
-    print("Character Count Without Spaces:", e1.statistics.char_count_without_spaces)
-    print('')
-    print("Syllable Count:", e1.statistics.syllable_count)
-    print('')
-    e1.start_of_sentence()
-    print('')
-    e1.word_occurances()
-    print('')
-    e1.bad_phrases()
+    def ari(self):
+        return EssayReadability(self.essay).ari()
+
+    def gunning_fog(self):
+        return EssayReadability(self.essay).gunning_fog()
+
+    def smog(self):
+        return EssayReadability(self.essay).smog()
+
+    def get_info(self):
+        print("Word Count:", self.statistics.word_count)
+        print("Sentence Count:", self.statistics.sentence_count)
+        print("Character Count:", self.statistics.char_count)
+        print("Character Count Without Spaces:", self.statistics.char_count_without_spaces)
+        print("Letter Count:", self.statistics.letter_count)
+        print("Syllable Count:", self.statistics.syllable_count)
+        print("Poly Syllable Word Count:", self.statistics.poly_syllable_word_count)
+        print("\nStart of Sentences:")
+        self.start_of_sentence()
+        print("\nWord Occurances:")
+        self.word_occurances()
+        print("\nBad Phrases:")
+        self.bad_phrases()
+        print("\nReadability Scores:")
+        print(self.flesch())
+        print(self.flesch_kincaid())
+        print(self.ari())
+        print(self.gunning_fog())
+        print(self.smog())
+
 
 with open('texts/essay.txt', 'r') as f:
     essay = f.read()
 
-check_essay(essay)
 e1 = Essay(essay)
+e1.get_info()

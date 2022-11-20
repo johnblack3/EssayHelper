@@ -22,8 +22,8 @@ class EssayStatistics:
         for c in self.essay:
             if c in [".", "?", "!"]:
                 if position == len(self.essay) - 1:
-                    break
-                elif self.essay[position + 1] == " ":
+                    num_of_sentences +=1
+                elif self.essay[position + 1] in [' ', '"']:
                     num_of_sentences += 1
             position += 1
         #print("Sentences:", num_of_sentences)
@@ -32,12 +32,15 @@ class EssayStatistics:
     def get_char_count(self):
         """Find the number of characters."""
         char_count = 0
+        letter_count = 0
         space_count = 0
         for c in self.essay:
             char_count += 1
+            if c.lower() in 'abcdefghijklmnopqrstuvwxyz':
+                letter_count += 1
             if c == ' ':
                 space_count += 1
-        return char_count, char_count - space_count
+        return char_count, char_count - space_count, letter_count
         #print("Characters:", char_count, '\nCharacters (excluding spaces):', char_count-space_count)
 
     @property
@@ -47,6 +50,10 @@ class EssayStatistics:
     @property
     def char_count_without_spaces(self):
         return self.get_char_count()[1]
+
+    @property
+    def letter_count(self):
+        return self.get_char_count()[2]
 
     def get_syllables(self, word):
         """Find the number of syllables in a word"""
@@ -77,12 +84,25 @@ class EssayStatistics:
         return total_syllables
 
     @property
+    def poly_syllable_word_count(self):
+        """Find the number of syllables in the entire text"""
+        total_poly_syllable_words = 0
+        no_punct = ""
+        for c in self.essay:
+            if c not in '''!"#$%&'()*+, -./:;<=>?@[\]^_`{|}~''' or c == ' ':
+                no_punct += c
+        for word in no_punct.split():
+            if self.get_syllables(word) >= 3:
+                total_poly_syllable_words += 1
+        return total_poly_syllable_words
+
+    @property
     def avg_words_per_sentence(self):
         return self.word_count/self.sentence_count
 
     @property
-    def avg_syllables_per_sentence(self):
-        return self.syllable_count/self.sentence_count
+    def avg_syllables_per_word(self):
+        return self.syllable_count/self.word_count
 
     def get_statistics(self):
         return {
@@ -90,7 +110,9 @@ class EssayStatistics:
             "sentence_count": self.sentence_count,
             "char_count": self.char_count,
             "char_count_without_spaces": self.char_count_without_spaces,
+            "letter_count": self.letter_count,
             "syllable_count": self.syllable_count,
+            "poly_syllable_word_count": self.poly_syllable_word_count,
             "avg_words_per_setence": self.avg_words_per_sentence,
-            "avg_syllables_per_setence": self.avg_syllables_per_sentence,
+            "avg_syllables_per_word": self.avg_syllables_per_word,
         }
